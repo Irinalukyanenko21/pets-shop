@@ -84,11 +84,14 @@ const items = [{
     },
 ];
 
-
 const container = document.getElementById("shop-items");
 const template = document.getElementById("item-template");
+const btn = document.getElementById("search-btn");
+const input = document.getElementById("search-input");
+const nothingFound = document.getElementById("nothing-found");
 
-items.forEach(item => {
+// Функция создания карточки
+function createCard(item) {
     const clone = template.content.cloneNode(true);
 
     const img = clone.querySelector("img");
@@ -102,69 +105,45 @@ items.forEach(item => {
     description.textContent = item.description;
 
     const price = clone.querySelector(".price");
-    price.textContent = item.price + "Р";
+    price.textContent = item.price + "₽";
 
     const tagsContainer = clone.querySelector(".tags");
     item.tags.forEach(tag => {
         const tagEl = document.createElement("span");
-        tagEl.textContent = tag;
         tagEl.classList.add("tag");
+        tagEl.textContent = tag;
         tagsContainer.appendChild(tagEl);
     });
 
-    container.appendChild(clone);
-});
+    return clone;
+}
 
-
-// Поиск
-const btn = document.getElementById("search-btn");
-const input = document.getElementById("search-input");
-const nothingFound = document.getElementById("nothing-found");
-
-btn.addEventListener("click", function() {
-    // очищаем контейнер и надпись "ничего не найдено"
-    console.log("Кнопка нажата");
+// Функция отрисовки карточек
+function renderItems(array) {
     container.innerHTML = "";
+    array.forEach(item => {
+        const card = createCard(item);
+        container.appendChild(card);
+    });
+}
+
+// поиск
+btn.addEventListener("click", function() {
+    const searchValue = input.value.trim().toLowerCase();
     nothingFound.textContent = "";
 
-    const searchValue = input.value.trim().toLowerCase();
-
-    const results = [];
-
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-
-        if (
-            item.title.toLowerCase().includes(searchValue) ||
-            item.description.toLowerCase().includes(searchValue) ||
-            item.tags.some(tag => tag.toLowerCase().includes(searchValue))
-        ) {
-            results.push(item);
-        }
-    }
+    const results = items.filter(item =>
+        item.title.toLowerCase().includes(searchValue) ||
+        item.description.toLowerCase().includes(searchValue) ||
+        item.tags.some(tag => tag.toLowerCase().includes(searchValue))
+    );
 
     if (results.length > 0) {
-        for (let i = 0; i < results.length; i++) {
-            const item = results[i];
-            const template = document.getElementById("item-template").content.cloneNode(true);
-
-            template.querySelector("img").src = item.img;
-            template.querySelector("h1").textContent = item.title;
-            template.querySelector("p").textContent = item.description;
-            template.querySelector(".price").textContent = item.price + "₽";
-
-            const tagsContainer = template.querySelector(".tags");
-
-            for (let j = 0; j < item.tags.length; j++) {
-                const tag = document.createElement("span");
-                tag.classList.add("tag");
-                tag.textContent = item.tags[j];
-                tagsContainer.appendChild(tag);
-            }
-
-            container.appendChild(template);
-        }
+        renderItems(results);
     } else {
+        container.innerHTML = "";
         nothingFound.textContent = "Ничего не найдено";
     }
 });
+
+renderItems(items);
